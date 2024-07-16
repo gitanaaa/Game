@@ -11,7 +11,7 @@ def main():
 
     pygame.init()
     pygame.display.set_caption("トロッコゲーム")
-    screen = pygame.display.set_mode((800,400))
+    screen = pygame.display.set_mode((800,600))
     clock = pygame.time.Clock()
 
     while True:
@@ -19,8 +19,8 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-        bg_y = (bg_y+1.25)%400
-        screen.blit(img_bg,[0,bg_y-400])
+        bg_y = (bg_y+1.25)%600
+        screen.blit(img_bg,[0,bg_y-600])
         screen.blit(img_bg,[0,bg_y])
 
         pygame.display.update()
