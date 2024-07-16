@@ -10,42 +10,40 @@ import time
 
 # =================================================
 # 初期設定値(定数)
-BOX_MARGIN = 50
-BOX_TOP_X = BOX_MARGIN # ゲーム領域の左上X座標
-BOX_TOP_Y = BOX_MARGIN # ゲーム領域の左上Y座標
-BOX_WIDTH = 700        # ゲーム領域の幅
-BOX_HEIGHT = 500       # ゲーム領域の高さ
-BOX_CENTER = BOX_TOP_X + BOX_WIDTH/2 # ゲーム領域の中心
+BOX_TOP_X = 0 # ゲーム領域の左上X座標
+BOX_TOP_Y = 0 # ゲーム領域の左上Y座標
+WALL_EAST = 700        # ゲーム領域の幅
+WALL_SOUTH = 500       # ゲーム領域の高さ
+BOX_CENTER = BOX_TOP_X + WALL_EAST /2 # ゲーム領域の中心
 
-CANVAS_WIDTH = BOX_TOP_X + BOX_WIDTH + BOX_MARGIN    # Canvasの幅
-CANVAS_HEIGHT = BOX_TOP_Y + BOX_HEIGHT + BOX_MARGIN  # Canvasの高さ
+CANVAS_WIDTH = WALL_EAST    # Canvasの幅
+CANVAS_HEIGHT = WALL_SOUTH  # Canvasの高さ
 CANVAS_BACKGROUND = "lightgray"                      # Canvasの背景色
 
 DURATION = 0.01        # 描画間隔
 
 
-MESSAGE_Y = BALL_Y0 + 50        # メッセージ表示のY座標
+MESSAGE_Y = WALL_SOUTH / 2        # メッセージ表示のY座標
 
-CURSOR_X0 = WALL_EAST / 4 - 60  # トロッコ初期位置(x)
-CURSOR_Y0 = WALL_SOUTH - 150    # トロッコ初期位置(y)
-CURSOR_W = 120                  # トロッコの幅
-CURSOR_H = 120                  # トロッコ高さ
-CURSOR_VX = (WALL_EAST / 2 - WALL_EAST / 4) # カーソル移動
+TROLLEY_X0 = WALL_EAST / 2 - 40   # トロッコ初期位置(x)
+TROLLEY_Y0 = WALL_SOUTH - 150    # トロッコ初期位置(y)
+TROLLEY_W = 80                  # トロッコの幅
+TROLLEY_H = 120                  # トロッコ高さ
+TROLLEY_VX = (WALL_EAST / 2 - WALL_EAST / 6) # カーソル移動
+
+DROP_SPEED = 5                  #アイテムの落ちる速度
 
 DRINK_WIDTH = 20                # エナドリの横幅
 DRINK_HEIGHT = 20               # エナドリの長さ
-DRINK_VY = 5                    # エナドリの落ちる速さ
 DRINK_COLOR = "blue"            # エナドリの色
 
 CANDY_BONUS = 50                # ボーナス点
 CANDY_WIDTH = 20                # ボーナスアイテムの幅
 CANDY_HEIGHT = 20               # ボーナスアイテムの高さ
-CANDY_VY = 5                    # ボーナスアイテムの落下速度
 CANDY_COLOR = "RED"             # ボーナスアイテムの色
 
 ROCK_WIDTH = 20                # 岩アイテムの幅
 ROCK_HEIGHT = 20               # 岩アイテムの高さ
-ROCK_VY = 5                    # 岩アイテムの落下速度
 ROCK_COLOR = "RED"             # 岩アイテムの色
 
 ADD_SCORE = 10                  # 得点の増加値
@@ -88,18 +86,25 @@ class Rock(MovingObject):
         MovingObject.__init__(self, id, x, y, w, h, 0, vy)
 
 
-# ブロック
-@dataclass
-class Block:
-    id: int
-    x: int
-    y: int
-    w: int
-    h: int
-    pt: int
-    bc: int
-    c: str
+# Trolleyは、MovingObjectを継承している。
+class Trolley(MovingObject):
+    def __init__(self, id, x, y, w, h, c):
+        MovingObject.__init__(self, id, x, y, w, h, 0, 0)
+        self.c = c
 
+    def move(self):                     # トロッコだけ独自の移動
+        self.x += self.vx
+        if self.x < WALL_EAST / 6 - 40:
+            self.x = WALL_EAST / 6 - 40
+        if self.x > WALL_EAST * (5/6) - 40:
+            self.x = WALL_EAST * (5/6) - 40
+        self.vx = 0  #矢印キーを押した一瞬だけ反応
+    
+    def set_v(self, v):
+        self.vx = v     # 移動量の設定は、独自メソッド
+
+    def stop(self):     # 停止も、Paddle独自のメソッド
+        self.vx = 0
 
 # ----------------------------------
 # Box(ゲーム領域)の定義
@@ -110,15 +115,15 @@ class Box:
     east: int
     south: int
     balls: list
-    paddle: Paddle
-    paddle_v: int
+    trolley: Trolley
+    trolley_v: int
     blocks: list
     duration: float
     run: int
     score: int
     paddle_count: int
-    spear: Spear
-    candy: Candy
+    #spear: Spear
+    #candy: Candy
 
     def __init__(self, x, y, w, h, duration):
         self.west, self.north = (x, y)
@@ -126,13 +131,13 @@ class Box:
         self.balls = []
         self.paddle = None
         self.blocks = []
-        self.paddle_v = PADDLE_VX
+        self.trolley_v = TROLLEY_VX
         self.duration = duration
         self.run = False
         self.score = 0  # 得点
         self.paddle_count = 0    # パドルでボールを打った回数
-        self.spear = None
-        self.candy = None
+        #self.spear = None
+        #self.candy = None
 
     # 壁の生成
     def make_walls(self):
@@ -143,24 +148,12 @@ class Box:
         id = canvas.create_oval(x, y, x + d, y + d, fill=BALL_COLOR)
         return Ball(id, x, y, d, vx, vy)
 
-    # パドルの生成
+    # トロッコの生成
     def create_paddle(self, x, y, w, h, c):
-        id = canvas.create_rectangle(x, y, x + w, y + h, fill=c)
-        return Paddle(id, x, y, w, h, c)
+        id = canvas.create_rectangle(x, y, x + w, y + h, fill=c,)
+        return Trolley(id, x, y, w, h, c)
 
-    # 槍の生成
-    def create_spear(self, x, y, w=SPEAR_WIDTH, h=SPEAR_HEIGHT, c=SPEAR_COLOR):
-        id = canvas.create_rectangle(x, y, x + w, y + h, fill=c)
-        return Spear(id, x, y, w, h, SPEAR_VY, c)
-
-    # ボーナスアイテムの生成
-    def create_candy(self, x, y, w=CANDY_WIDTH, h=CANDY_HEIGHT, c=CANDY_COLOR):
-        id = canvas.create_rectangle(x, y, x + w, y + h, fill=c)
-        return Candy(id, x, y, w, h, CANDY_VY, c)
-
-    def create_block(self, x, y, w, h, pt, bc, c):  # ブロックの生成
-        id = canvas.create_rectangle(x, y, x + w, y + h, fill=c)
-        return Block(id, x, y, w, h, pt, bc, c)
+   
 
     def check_wall(self, ball):   # 壁に当たった時の処理
         if ball.y + ball.d + ball.vy >= self.south:  # 下に逃した
@@ -254,14 +247,14 @@ class Box:
         else:
             return False
 
-    def left_paddle(self, event):   # パドルを左に移動(Event処理)
-        self.paddle.set_v(- self.paddle_v)
+    def left_trolley(self, event):   # トロッコを左に移動(Event処理)
+        self.trolley.set_v(- self.trolley_v)
 
-    def right_paddle(self, event):  # パドルを右に移動(Event処理)
-        self.paddle.set_v(self.paddle_v)
+    def right_trolley(self, event):  # トロッコを右に移動(Event処理)
+        self.trolley.set_v(self.trolley_v)
 
-    def stop_paddle(self, event):   # パドルを止める(Event処理)
-        self.paddle.stop()
+    def stop_trolley(self, event):   # トロッコを止める(Event処理)
+        self.trolley.stop()
 
     def game_start(self, event):
         self.run = True
@@ -289,8 +282,6 @@ class Box:
         tk.update()
 
     def set(self):   # 初期設定を一括して行う
-        # 壁の描画
-        self.make_walls()
         # スコアの表示
         self.id_score = canvas.create_text(
             BOX_TOP_X,
@@ -299,93 +290,26 @@ class Box:
             font=("FixedSys", 16), justify="left",
             anchor=SW
             )
-        # ボールの生成
-        ball = self.create_ball(BALL_X0, BALL_Y0,
-                                BALL_DIAMETER, BALL_VX, BALL_VY)
-        self.balls.append(ball)
-        # パドルの生成
-        self.paddle = self.create_paddle(PADDLE_X0, PADDLE_Y0,
-                                         PADDLE_WIDTH, PADDLE_HEIGHT,
-                                         random.choice(PADDLE_COLORS))
-        # ブロックの生成
-        for y in range(NUM_ROWS):
-            bc = NUM_ROWS - y   # ブロックの硬さ(1〜NUM_ROWS)
-            for x in range(NUM_COLS):
-                block = self.create_block(
-                    self.west + x * BLOCK_SPAN_X + BLOCK_PAD,
-                    self.north + y * BLOCK_SPAN_Y + BLOCK_TOP,
-                    BLOCK_WIDTH, BLOCK_HEIGHT,
-                    BLOCK_POINTS * bc, bc,
-                    BLOCK_COLORS[bc - 1]
-                    )
-                self.blocks.append(block)
+
+        # トロッコの生成
+        self.trolley = self.create_paddle(TROLLEY_X0, TROLLEY_Y0,
+                                         TROLLEY_W, TROLLEY_H,
+                                         "red")
+
         # イベント処理の登録
-        canvas.bind_all('<KeyPress-Right>', self.right_paddle)
-        canvas.bind_all('<KeyPress-Left>', self.left_paddle)
-        canvas.bind_all('<KeyRelease-Right>', self.stop_paddle)
-        canvas.bind_all('<KeyRelease-Left>', self.stop_paddle)
+        canvas.bind_all('<KeyPress-Right>', self.right_trolley)
+        canvas.bind_all('<KeyPress-Left>', self.left_trolley)
+        #canvas.bind_all('<KeyRelease-Right>', self.stop_paddle)
+        #canvas.bind_all('<KeyRelease-Left>', self.stop_paddle)
         canvas.bind_all('<KeyPress-space>', self.game_start)  # SPACEが押された
 
     def animate(self):
         # 動くものを一括登録
-        self.movingObjs = [self.paddle] + self.balls
+        self.movingObjs = [self.trolley]
         while self.run:
             for obj in self.movingObjs:
                 obj.move()          # 座標を移動させる
-            if self.spear:
-                if self.check_spear(self.spear, self.paddle):
-                    self.game_end("You are destroyed!")  # ゲームオーバの表示
-                    break               # 槍に当たった
-            if self.candy:
-                if self.check_candy(self.candy, self.paddle):
-                    self.score += CANDY_BONUS
-                    self.update_score()
-                    canvas.delete(self.candy.id)
-                    self.movingObjs.remove(self.candy)
-                    self.candy = None
-            for ball in self.balls:
-                if self.check_wall(ball):  # 壁との衝突処理
-                    canvas.delete(ball.id)
-                    self.balls.remove(ball)
-                    self.movingObjs.remove(ball)
-                self.check_paddle(self.paddle, ball)  # パドル反射
-                for block in self.blocks:
-                    if self.check_block(block, ball): # ブロック衝突
-                        block.bc -= 1  # 硬さが一つ減る
-                        if block.bc > 0:
-                            canvas.itemconfigure(block.id,
-                                                 fill=BLOCK_COLORS[block.bc - 1])
-                        else:  # 硬さがゼロになった。
-                            self.score = self.score + block.pt
-                            self.update_score()
-                            canvas.delete(block.id)
-                            self.blocks.remove(block)
-            if len(self.balls) == 0:
-                self.game_end("Game Over!")  # ゲームオーバの表示
-                break               # 最後のボールを下に逃した
-            if len(self.blocks) == 0:   # 最後のブロックを消したら
-                self.game_end("Clear!")  # ゲームオーバの表示
-                break                   # 抜ける
-            if self.spear==None and random.random() < 0.01:  # 確率1%で発生
-                self.spear = self.create_spear(
-                    random.randint(self.west, self.east),
-                    self.north)
-                self.movingObjs.append(self.spear)
-            if self.candy==None and random.random() < 0.005:  # 確率0.5%で発生
-                self.candy = self.create_candy(
-                    random.randint(self.west, self.east),
-                    self.north)
-                self.movingObjs.append(self.candy)
-
-            if self.spear and self.spear.y + self.spear.h >= self.south:
-                canvas.delete(self.spear.id)
-                self.movingObjs.remove(self.spear)
-                self.spear = None
-            if self.candy and self.candy.y + self.candy.h >= self.south:
-                canvas.delete(self.candy.id)
-                self.movingObjs.remove(self.candy)
-                self.candy = None
-
+            
             for obj in self.movingObjs:
                 obj.redraw()    # 移動後の座標で再描画(画面反映)
             time.sleep(self.duration)
@@ -400,7 +324,7 @@ canvas.pack()
 
 # ----------------------------------
 # メインルーチン
-box = Box(BOX_TOP_X, BOX_TOP_Y, BOX_WIDTH, BOX_HEIGHT, DURATION)
+box = Box(BOX_TOP_X, BOX_TOP_Y, WALL_EAST, WALL_SOUTH, DURATION)
 box.set()           # ゲームの初期設定
 box.wait_start()    # 開始待ち
 box.animate()       # アニメーション
