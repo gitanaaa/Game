@@ -38,26 +38,6 @@ TROLLEY_H = 120                  # トロッコ高さ
 TROLLEY_VX = (WALL_EAST / 2 - WALL_EAST / 6) # カーソル移動
 
 
-
-DRINK_WIDTH = 20                # エナドリの横幅
-DRINK_HEIGHT = 20               # エナドリの長さ
-DRINK_COLOR = "blue"            # エナドリの色
-
-CANDY_BONUS = 50                # ボーナス点
-CANDY_WIDTH = 20                # ボーナスアイテムの幅
-CANDY_HEIGHT = 20               # ボーナスアイテムの高さ
-CANDY_COLOR = "RED"             # ボーナスアイテムの色
-
-ROCK_WIDTH = 20                # 岩アイテムの幅
-ROCK_HEIGHT = 20               # 岩アイテムの高さ
-ROCK_COLOR = "RED"             # 岩アイテムの色
-
-DROP_SPEED = 5                  #アイテムの落ちる速度
-DROP_Y = [WALL_EAST / 2 - 40 - DRINK_WIDTH, WALL_EAST / 6 - 40 - DRINK_WIDTH,
-          WALL_EAST * (5/6) - 40 - DRINK_WIDTH]  #アイテムの出現する場所
-
-ADD_SCORE = 10                  # 得点の増加値
-
 # ----------------------------------
 # 共通の親クラスとして、MovingObjectを定義
 @dataclass
@@ -78,22 +58,6 @@ class MovingObject:
         self.x += self.vx
         self.y += self.vy
 
-
-
-# 各アイテムはは、MovingObjectを継承している。
-class Drink(MovingObject):
-    def __init__(self, id, x, y, w, h, vy, c):
-        MovingObject.__init__(self, id, x, y, w, h, 0, vy)
-
-
-class Candy(MovingObject):
-    def __init__(self, id, x, y, w, h, vy, c):
-        MovingObject.__init__(self, id, x, y, w, h, 0, vy)
-
-        
-class Rock(MovingObject):
-    def __init__(self, id, x, y, w, h, vy, c):
-        MovingObject.__init__(self, id, x, y, w, h, 0, vy)
 
 
 # Trolleyは、MovingObjectを継承している。
@@ -124,34 +88,21 @@ class Box:
     north: int
     east: int
     south: int
-    balls: list
     title_select: int
     start_ruletext: int
     trolley: Trolley
     trolley_v: int
-    blocks: list
     duration: float
     run: int
-    score: int
-    paddle_count: int
-    #spear: Spear
-    #candy: Candy
 
     def __init__(self, x, y, w, h, duration):
         self.west, self.north = (x, y)
         self.east, self.south = (x + w, y + h)
-        self.balls = []
-        self.paddle = None
-        self.blocks = []
         self.title_select = 1
         self.start_ruletext = 2
         self.trolley_v = TROLLEY_VX
         self.duration = duration
         self.run = False
-        self.score = 0  # 得点
-        self.paddle_count = 0    # パドルでボールを打った回数
-        #self.spear = None
-        #self.candy = None
 
 
 
@@ -230,104 +181,6 @@ class Box:
         id = canvas.create_rectangle(x, y, x + w, y + h, fill=c,)
         return Trolley(id, x, y, w, h, c)
 
-    # スピードアップドリンクの生成
-    def create_spear(self, x, y, w=DRINK_WIDTH, h=DRINK_HEIGHT, c=DRINK_COLOR):
-        id = canvas.create_rectangle(x, y, x + w, y + h, fill=c)
-        return Drink(id, x, y, w, h, DROP_SPEED, c)
-
-
-    def check_wall(self, ball):   # 壁に当たった時の処理
-        if ball.y + ball.d + ball.vy >= self.south:  # 下に逃した
-            return True
-        if (ball.x + ball.vx <= self.west \
-            or ball.x + ball.d + ball.vx >= self.east):
-            ball.vx = -ball.vx
-        if ball.y + ball.vy <= self.north:
-            ball.vy = -ball.vy
-        return False
-
-    def check_paddle(self, paddle, ball):  # ボールがパドルに当たった処理
-        hit = False
-        # 左から当たる
-        if (paddle.x <= ball.x + ball.d + ball.vx <= paddle.x + paddle.w
-            and paddle.y <= ball.y + ball.d/2 + ball.vy <= paddle.y + paddle.h):
-            hit = True
-            ball.vx = - ball.vx
-        # 上から当たる
-        elif (paddle.y <= ball.y + ball.d + ball.vy <= paddle.y + paddle.h
-            and paddle.x <= ball.x + ball.d/2 + ball.vx <= paddle.x + paddle.w):
-            # ボールの位置によって、反射角度を変える
-            hit = True
-            ball.vx = int(6*(ball.x + ball.d/2 - paddle.x) / paddle.w) - 3
-            ball.vy = - ball.vy
-        # 右から当たる
-        elif (paddle.x <= ball.x + ball.vx <= paddle.x + paddle.w \
-            and paddle.y <= ball.y + ball.d/2 + ball.vy <= paddle.y + paddle.h):
-            hit = True
-            ball.vx = - ball.vx
-        # パドルのボーダーチェック
-        if paddle.x + paddle.vx <= self.west:
-            paddle.stop()
-            paddle.x = self.west
-        elif self.east <= paddle.x + paddle.vx + paddle.w:
-            paddle.stop()
-            paddle.x = self.east - paddle.w
-        if hit: # パドルにボールが当たった
-            self.paddle_count += 1
-            if self.paddle_count % MULTI_BALL_COUNT == 0: # ボールを発生
-                if len(self.balls) < BALL_MAX_NUM:
-                    ball = self.create_ball(BALL_X0, BALL_Y0,
-                                            BALL_DIAMETER,
-                                            random.choice(VX0), BALL_VY)
-                    self.balls.append(ball)
-                    self.movingObjs.append(ball)
-            if self.paddle_count % PADDLE_SHORTEN_COUNT == 0: # パドルを短くするか？
-                if paddle.w > PADDLE_MIN_W:  # まだ短くできる！
-                    paddle.w -= PADDLE_SHORTEN
-            if self.paddle_count % SPEED_UP == 0: # ボールを加速させるか？
-                if ball.vy > -BALL_MAX_VY: # まだ加速できる！
-                    ball.vy -= 1   # ボールが上向きになっていることに注意！
-
-    def check_block(self, block, ball):  # ボールがブロックに当たったか判定
-        # 上から当たる
-        if (block.y <= ball.y + ball.d + ball.vy <= block.y + block.h \
-            and block.x <= ball.x + ball.d/2 + ball.vx <= block.x + block.w):
-            ball.vy = - ball.vy
-            return True
-        # 右から当たる
-        elif (block.x <= ball.x + ball.vx <= block.x + block.w
-            and block.y <= ball.y + ball.d/2 + ball.vy <= block.y + block.h):
-            ball.vx = - ball.vx
-            return True
-        # 左から当たる
-        elif (block.x <= ball.x + ball.d + ball.vx <= block.x + block.w
-            and block.y <= ball.y + ball.d/2 + ball.vy <= block.y + block.h):
-            ball.vx = - ball.vx
-            return True
-        # 下から当たる
-        elif (block.y <= ball.y + ball.vy <= block.y + block.h
-            and block.x <= ball.x + ball.d/2 + ball.vx <= block.x + block.w):
-            ball.vy = - ball.vy
-            return True
-        else:
-            return False
-
-    def check_spear(self, spear, paddle):
-        if (paddle.x <= spear.x <= paddle.x + paddle.w \
-            and spear.y + spear.h > paddle.y \
-            and spear.y <= paddle.y + paddle.h):  # 槍に当たった
-            return True
-        else:
-            return False
-
-    def check_candy(self, candy, paddle):
-        if (paddle.x <= candy.x <= paddle.x + paddle.w \
-            and candy.y + candy.h > paddle.y \
-            and candy.y <= paddle.y + paddle.h):  # ボーナスゲット！
-            return True
-        else:
-            return False
-
 
     #タイトル画面キー操作
     def start_text_select(self, event):
@@ -358,9 +211,6 @@ class Box:
                            text=message, font=('FixedSys', 16))
         tk.update()
 
-    def update_score(self):
-        canvas.itemconfigure(self.id_score,
-                             text="score:" + str(self.score))
 
     def title(self):
         #タイトル画面のイベントハンドラ
@@ -408,27 +258,8 @@ class Box:
         
         
 
-    def wait_start(self):
-        # SPACEの入力待ち
-        id_text = canvas.create_text(BOX_CENTER, MESSAGE_Y,
-                                     text="Press 'SPACE' to start",
-                                     font=('FixedSys', 16))
-        tk.update()
-        while not self.run:    # ひたすらSPACEを待つ
-            tk.update()
-            time.sleep(self.duration)
-        canvas.delete(id_text)  # SPACE入力のメッセージを削除
-        tk.update()
-
     def set(self):   # 初期設定を一括して行う
-        # スコアの表示
-        self.id_score = canvas.create_text(
-            BOX_TOP_X,
-            BOX_TOP_Y - 2,
-            text=("score: " + str(self.score)),
-            font=("FixedSys", 16), justify="left",
-            anchor=SW
-            )
+
 
         # トロッコの生成
         self.trolley = self.create_paddle(TROLLEY_X0, TROLLEY_Y0,
