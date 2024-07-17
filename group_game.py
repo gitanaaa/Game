@@ -184,8 +184,46 @@ class Box:
                                      font=('Snap ITC', 25))
             return rule
         
+    #ルール説明
+    def rule_text(self):
+        self.rule_text = canvas.create_text(BOX_CENTER, MESSAGE_Y - 60,
+                                     text="～ ルール ～",
+                                     font=('Malgun Gothic',30))
+        self.rule_text1 = canvas.create_text(TITLE_BACK_X + 25, MESSAGE_Y,
+                                     text="①：方向キーの右と左を使って移動しよう",
+                                     anchor = "nw",
+                                     font=('Malgun Gothic',16))
+        self.rule_text2 = canvas.create_text(TITLE_BACK_X + 25, MESSAGE_Y + 50,
+                                     text="②：岩をよけて行動しよう",
+                                     anchor = "nw",
+                                     font=('Malgun Gothic',16))
+        self.rule_text3 = canvas.create_text(TITLE_BACK_X + 25, MESSAGE_Y + 100,
+                                     text="③：ボーナスアイテムをとって得点を稼ごう",
+                                     anchor = "nw",
+                                     font=('Malgun Gothic',16))
+        self.rule_text4 = canvas.create_text(TITLE_BACK_X + 400, MESSAGE_Y + 170,
+                                     text="～以上～",
+                                     font=('Malgun Gothic',18))
+        self.rule_text5 = canvas.create_text(TITLE_BACK_X + 440, MESSAGE_Y + 200,
+                                     text="ふぁいと～",
+                                     font=('Malgun Gothic',10))
+        self.rule_text6 = canvas.create_text(TITLE_BACK_X + 400, 550,
+                                     text="'Press Enter' To Title",
+                                     font=('Malgun Gothic',14))
+        tk.update()
 
-
+    def rule_text_delete(self):
+        canvas.delete(self.rule_text, self.rule_text1, self.rule_text2, self.rule_text3, self.rule_text4,
+                      self.rule_text5, self.rule_text6)
+        tk.update()
+        del self.rule_text
+        del self.rule_text1
+        del self.rule_text2
+        del self.rule_text3
+        del self.rule_text4
+        del self.rule_text5
+        del self.rule_text6
+        
         
     # トロッコの生成
     def create_paddle(self, x, y, w, h, c):
@@ -342,9 +380,10 @@ class Box:
         id_text2 = canvas.create_text(BOX_CENTER, MESSAGE_Y-150,
                                      text="ADVENTURE",
                                      font=('Ravie', 40))
-
+        
+        #タイトル画面（ルール画面もあり）
         while not self.run:    # スタートボタンが押されるまで待つ
-            if self.start_ruletext % 2 == 0:
+            if self.start_ruletext % 2 == 0:           #タイトル画面
                 self.start_text_color(self.title_select)
                 self.rule_text_color(self.title_select)
                 tk.update()
@@ -353,23 +392,17 @@ class Box:
                 canvas.delete(start)
                 canvas.delete(rule)
 
-            else:
-                id_text3 = canvas.create_text(BOX_CENTER, MESSAGE_Y,
-                                     text="Press 'SPACE' to start",
-                                     font=('FixedSys', 16))
-                self.text = [id_text3]
-                tk.update()
+            else:                                       #ルール説明画面
+                self.rule_text()
                 while self.start_ruletext % 2 == 1:
                     tk.update()
                     time.sleep(self.duration)
-                tk.update()
-                canvas.delete(id_text3)                
+                self.rule_text_delete()                
                     
             #print(self.title_select)
             #time.sleep(self.duration)
             #canvas.delete(id_text)
-            
-        canvas.delete(self.text)  # SPACE入力のメッセージを削除
+        canvas.delete("all")
         tk.update()
 
         
