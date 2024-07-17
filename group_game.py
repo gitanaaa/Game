@@ -137,8 +137,8 @@ class Box:
         self.balls = []
         self.paddle = None
         self.blocks = []
-        title_select = 1
-        start_ruletext = 2
+        self.title_select = 1
+        self.start_ruletext = 2
         self.trolley_v = TROLLEY_VX
         self.duration = duration
         self.run = False
@@ -150,29 +150,33 @@ class Box:
 
 
     #タイトル画面選択肢の表示(カーソルが合えば文字がピンク色になる)
-    def start_text_color(title_select):
+    def start_text_color(self, title_select):
         global start
-        if title_select == 1:
+        if self.title_select == 1:
             start = canvas.create_text(BOX_CENTER, MESSAGE_Y,
                                      text="スタート",
                                      fill = "magenta",
                                      font=('FixedSys', 16))
+            return start
         else:
             start = canvas.create_text(BOX_CENTER, MESSAGE_Y,
-                                     text="Press 'SPACE' to start",
+                                     text="スタート",
                                      font=('FixedSys', 16))
+            return start
             
-    def rule_text_color(title_select):
+    def rule_text_color(self, title_select):
         global rule
-        if title_select == 0:
-            rule = canvas.create_text(BOX_CENTER, MESSAGE_Y,
-                                     text="スタート",
+        if self.title_select == 0:
+            rule = canvas.create_text(BOX_CENTER, MESSAGE_Y + 50,
+                                     text="ルール",
                                      fill = "magenta",
                                      font=('FixedSys', 16))
+            return rule
         else:
-            rule = canvas.create_text(BOX_CENTER, MESSAGE_Y,
-                                     text="Press 'SPACE' to start",                               
+            rule = canvas.create_text(BOX_CENTER, MESSAGE_Y + 50,
+                                     text="ルール",                               
                                      font=('FixedSys', 16))
+            return rule
             
 
         
@@ -282,16 +286,16 @@ class Box:
 
     #タイトル画面キー操作
     def start_text_select(self, event):
-        title_select = 1
+        self.title_select = 1
 
     def rule_text_select(self, event):
-        title_select = 0
+        self.title_select = 0
 
     def game_start(self, event):
-        if title_select = 0 and start_ruletext % 2 = 0:
+        if self.title_select == 1 and self.start_ruletext % 2 == 0:
             self.run = True
         else:
-            start_ruletext += 1
+            self.start_ruletext += 1
 
     
     def left_trolley(self, event):   # トロッコを左に移動(Event処理)
@@ -302,9 +306,6 @@ class Box:
 
     def stop_trolley(self, event):   # トロッコを止める(Event処理)
         self.trolley.stop()
-
-    def game_start(self, event):
-        self.run = True
 
     def game_end(self, message):
         self.run = False
@@ -317,15 +318,39 @@ class Box:
                              text="score:" + str(self.score))
 
     def title(self):
-
-        
         #タイトル画面のイベントハンドラ
-        canvas.bind_all('<KeyPress-Right>', self.rule_text_select)
-        canvas.bind_all('<KeyPress-Left>', self.start_text_select)
-        canvas.bind_all('<KeyPress-space>', self.game_start)  # SPACEが押された
+        canvas.bind_all('<KeyPress-Down>', self.rule_text_select)
+        canvas.bind_all('<KeyPress-Up>', self.start_text_select)
+        canvas.bind_all('<Key-space>', self.game_start)  # SPACEが押された
 
-        start = None
-        rule = None
+        while not self.run:    # スタートボタンが押されるまで待つ
+            if self.start_ruletext % 2 == 0:
+                self.start_text_color(self.title_select)
+                self.rule_text_color(self.title_select)
+                tk.update()
+                time.sleep(self.duration)
+                tk.update()
+                canvas.delete(start)
+                canvas.delete(rule)
+
+            else:
+                id_text = canvas.create_text(BOX_CENTER, MESSAGE_Y,
+                                     text="Press 'SPACE' to start",
+                                     font=('FixedSys', 16))
+                self.text = [id_text]
+                tk.update()
+                while self.start_ruletext % 2 == 1:
+                    tk.update()
+                    time.sleep(self.duration)
+                tk.update()
+                canvas.delete(id_text)                
+                    
+            #print(self.title_select)
+            #time.sleep(self.duration)
+            #canvas.delete(id_text)
+            
+        canvas.delete(self.text)  # SPACE入力のメッセージを削除
+        tk.update()
 
         
         
@@ -388,5 +413,4 @@ canvas.pack()
 box = Box(BOX_TOP_X, BOX_TOP_Y, WALL_EAST, WALL_SOUTH, DURATION)
 box.title()         # タイトル画面 
 box.set()           # ゲームの初期設定
-box.wait_start()    # 開始待ち
 box.animate()       # アニメーション
