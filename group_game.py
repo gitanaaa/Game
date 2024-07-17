@@ -148,6 +148,34 @@ class Box:
         #self.candy = None
 
 
+
+    #タイトル画面選択肢の表示(カーソルが合えば文字がピンク色になる)
+    def start_text_color(title_select):
+        global start
+        if title_select == 1:
+            start = canvas.create_text(BOX_CENTER, MESSAGE_Y,
+                                     text="スタート",
+                                     fill = "magenta",
+                                     font=('FixedSys', 16))
+        else:
+            start = canvas.create_text(BOX_CENTER, MESSAGE_Y,
+                                     text="Press 'SPACE' to start",
+                                     font=('FixedSys', 16))
+            
+    def rule_text_color(title_select):
+        global rule
+        if title_select == 0:
+            rule = canvas.create_text(BOX_CENTER, MESSAGE_Y,
+                                     text="スタート",
+                                     fill = "magenta",
+                                     font=('FixedSys', 16))
+        else:
+            rule = canvas.create_text(BOX_CENTER, MESSAGE_Y,
+                                     text="Press 'SPACE' to start",                               
+                                     font=('FixedSys', 16))
+            
+
+        
     # トロッコの生成
     def create_paddle(self, x, y, w, h, c):
         id = canvas.create_rectangle(x, y, x + w, y + h, fill=c,)
@@ -158,7 +186,6 @@ class Box:
         id = canvas.create_rectangle(x, y, x + w, y + h, fill=c)
         return Drink(id, x, y, w, h, DROP_SPEED, c)
 
-   
 
     def check_wall(self, ball):   # 壁に当たった時の処理
         if ball.y + ball.d + ball.vy >= self.south:  # 下に逃した
@@ -296,6 +323,9 @@ class Box:
         canvas.bind_all('<KeyPress-Right>', self.rule_text_select)
         canvas.bind_all('<KeyPress-Left>', self.start_text_select)
         canvas.bind_all('<KeyPress-space>', self.game_start)  # SPACEが押された
+
+        start = None
+        rule = None
 
         
         
