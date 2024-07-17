@@ -31,7 +31,7 @@ TROLLEY_W = 80                  # トロッコの幅
 TROLLEY_H = 120                  # トロッコ高さ
 TROLLEY_VX = (WALL_EAST / 2 - WALL_EAST / 6) # カーソル移動
 
-DROP_SPEED = 5                  #アイテムの落ちる速度
+
 
 DRINK_WIDTH = 20                # エナドリの横幅
 DRINK_HEIGHT = 20               # エナドリの長さ
@@ -45,6 +45,10 @@ CANDY_COLOR = "RED"             # ボーナスアイテムの色
 ROCK_WIDTH = 20                # 岩アイテムの幅
 ROCK_HEIGHT = 20               # 岩アイテムの高さ
 ROCK_COLOR = "RED"             # 岩アイテムの色
+
+DROP_SPEED = 5                  #アイテムの落ちる速度
+DROP_Y = [WALL_EAST / 2 - 40 - DRINK_WIDTH, WALL_EAST / 6 - 40 - DRINK_WIDTH,
+          WALL_EAST * (5/6) - 40 - DRINK_WIDTH]  #アイテムの出現する場所
 
 ADD_SCORE = 10                  # 得点の増加値
 
@@ -70,7 +74,7 @@ class MovingObject:
 
 
 
-# Spearは、MovingObjectを継承している。
+# 各アイテムはは、MovingObjectを継承している。
 class Drink(MovingObject):
     def __init__(self, id, x, y, w, h, vy, c):
         MovingObject.__init__(self, id, x, y, w, h, 0, vy)
@@ -139,19 +143,16 @@ class Box:
         #self.spear = None
         #self.candy = None
 
-    # 壁の生成
-    def make_walls(self):
-        canvas.create_rectangle(self.west, self.north, self.east, self.south,
-                                outline="black")
-
-    def create_ball(self, x, y, d, vx, vy):  # ボールの生成
-        id = canvas.create_oval(x, y, x + d, y + d, fill=BALL_COLOR)
-        return Ball(id, x, y, d, vx, vy)
 
     # トロッコの生成
     def create_paddle(self, x, y, w, h, c):
         id = canvas.create_rectangle(x, y, x + w, y + h, fill=c,)
         return Trolley(id, x, y, w, h, c)
+
+    # スピードアップドリンクの生成
+    def create_spear(self, x, y, w=DRINK_WIDTH, h=DRINK_HEIGHT, c=DRINK_COLOR):
+        id = canvas.create_rectangle(x, y, x + w, y + h, fill=c)
+        return Drink(id, x, y, w, h, DROP_SPEED, c)
 
    
 
