@@ -20,6 +20,12 @@ CANVAS_WIDTH = WALL_EAST    # Canvasの幅
 CANVAS_HEIGHT = WALL_SOUTH  # Canvasの高さ
 CANVAS_BACKGROUND = "lightgray"                      # Canvasの背景色
 
+TITLE_BACK_X = 150          #タイトル背景の四角形のX座標
+TITLE_BACK_Y = 0            #タイトル背景の四角形のY座標
+TITLE_BACK_WIDTH = 650      #タイトル背景の四角形の幅
+TITLE_BACK_HIGHT = 600      #タイトル背景の四角形の高さ
+TITLE_BACK_LINE = 1         #タイトル背景の四角形の枠線の長さ
+
 DURATION = 0.01       # 描画間隔
 
 
@@ -177,7 +183,8 @@ class Box:
                                      text="RULE",                               
                                      font=('Snap ITC', 25))
             return rule
-            
+        
+
 
         
     # トロッコの生成
@@ -322,6 +329,11 @@ class Box:
         canvas.bind_all('<KeyPress-Down>', self.rule_text_select)
         canvas.bind_all('<KeyPress-Up>', self.start_text_select)
         canvas.bind_all('<Key-space>', self.game_start)  # SPACEが押された
+
+        #背後の四角形
+        canvas.create_rectangle(TITLE_BACK_X, TITLE_BACK_Y, TITLE_BACK_WIDTH, TITLE_BACK_HIGHT,
+                                fill = "wheat",
+                                width = TITLE_BACK_LINE)
 
         #タイトル名
         id_text = canvas.create_text(BOX_CENTER, MESSAGE_Y-200,
