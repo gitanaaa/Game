@@ -153,29 +153,29 @@ class Box:
     def start_text_color(self, title_select):
         global start
         if self.title_select == 1:
-            start = canvas.create_text(BOX_CENTER, MESSAGE_Y,
-                                     text="スタート",
+            start = canvas.create_text(BOX_CENTER, MESSAGE_Y+20,
+                                     text="START",
                                      fill = "magenta",
-                                     font=('FixedSys', 16))
+                                     font=('Snap ITC', 25))
             return start
         else:
-            start = canvas.create_text(BOX_CENTER, MESSAGE_Y,
-                                     text="スタート",
-                                     font=('FixedSys', 16))
+            start = canvas.create_text(BOX_CENTER, MESSAGE_Y+20,
+                                     text="START",
+                                     font=('Snap ITC', 25))
             return start
             
     def rule_text_color(self, title_select):
         global rule
         if self.title_select == 0:
-            rule = canvas.create_text(BOX_CENTER, MESSAGE_Y + 50,
-                                     text="ルール",
+            rule = canvas.create_text(BOX_CENTER, MESSAGE_Y + 80,
+                                     text="RULE",
                                      fill = "magenta",
-                                     font=('FixedSys', 16))
+                                     font=('Snap ITC', 25))
             return rule
         else:
-            rule = canvas.create_text(BOX_CENTER, MESSAGE_Y + 50,
-                                     text="ルール",                               
-                                     font=('FixedSys', 16))
+            rule = canvas.create_text(BOX_CENTER, MESSAGE_Y + 80,
+                                     text="RULE",                               
+                                     font=('Snap ITC', 25))
             return rule
             
 
@@ -323,6 +323,14 @@ class Box:
         canvas.bind_all('<KeyPress-Up>', self.start_text_select)
         canvas.bind_all('<Key-space>', self.game_start)  # SPACEが押された
 
+        #タイトル名
+        id_text = canvas.create_text(BOX_CENTER, MESSAGE_Y-200,
+                                     text="Trolley",
+                                     font=('Jokerman',20))
+        id_text2 = canvas.create_text(BOX_CENTER, MESSAGE_Y-150,
+                                     text="ADVENTURE",
+                                     font=('Ravie', 40))
+
         while not self.run:    # スタートボタンが押されるまで待つ
             if self.start_ruletext % 2 == 0:
                 self.start_text_color(self.title_select)
@@ -334,16 +342,16 @@ class Box:
                 canvas.delete(rule)
 
             else:
-                id_text = canvas.create_text(BOX_CENTER, MESSAGE_Y,
+                id_text3 = canvas.create_text(BOX_CENTER, MESSAGE_Y,
                                      text="Press 'SPACE' to start",
                                      font=('FixedSys', 16))
-                self.text = [id_text]
+                self.text = [id_text3]
                 tk.update()
                 while self.start_ruletext % 2 == 1:
                     tk.update()
                     time.sleep(self.duration)
                 tk.update()
-                canvas.delete(id_text)                
+                canvas.delete(id_text3)                
                     
             #print(self.title_select)
             #time.sleep(self.duration)
