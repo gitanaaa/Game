@@ -12,8 +12,8 @@ import time
 # 初期設定値(定数)
 BOX_TOP_X = 0 # ゲーム領域の左上X座標
 BOX_TOP_Y = 0 # ゲーム領域の左上Y座標
-WALL_EAST = 700        # ゲーム領域の幅
-WALL_SOUTH = 500       # ゲーム領域の高さ
+WALL_EAST = 800        # ゲーム領域の幅
+WALL_SOUTH = 600       # ゲーム領域の高さ
 BOX_CENTER = BOX_TOP_X + WALL_EAST /2 # ゲーム領域の中心
 
 CANVAS_WIDTH = WALL_EAST    # Canvasの幅
@@ -119,6 +119,8 @@ class Box:
     east: int
     south: int
     balls: list
+    title_select: int
+    start_ruletext: int
     trolley: Trolley
     trolley_v: int
     blocks: list
@@ -135,6 +137,8 @@ class Box:
         self.balls = []
         self.paddle = None
         self.blocks = []
+        title_select = 1
+        start_ruletext = 2
         self.trolley_v = TROLLEY_VX
         self.duration = duration
         self.run = False
@@ -248,6 +252,21 @@ class Box:
         else:
             return False
 
+
+    #タイトル画面キー操作
+    def start_text_select(self, event):
+        title_select = 1
+
+    def rule_text_select(self, event):
+        title_select = 0
+
+    def game_start(self, event):
+        if title_select = 0 and start_ruletext % 2 = 0:
+            self.run = True
+        else:
+            start_ruletext += 1
+
+    
     def left_trolley(self, event):   # トロッコを左に移動(Event処理)
         self.trolley.set_v(- self.trolley_v)
 
@@ -269,6 +288,17 @@ class Box:
     def update_score(self):
         canvas.itemconfigure(self.id_score,
                              text="score:" + str(self.score))
+
+    def title(self):
+
+        
+        #タイトル画面のイベントハンドラ
+        canvas.bind_all('<KeyPress-Right>', self.rule_text_select)
+        canvas.bind_all('<KeyPress-Left>', self.start_text_select)
+        canvas.bind_all('<KeyPress-space>', self.game_start)  # SPACEが押された
+
+        
+        
 
     def wait_start(self):
         # SPACEの入力待ち
@@ -302,7 +332,7 @@ class Box:
         canvas.bind_all('<KeyPress-Left>', self.left_trolley)
         #canvas.bind_all('<KeyRelease-Right>', self.stop_paddle)
         #canvas.bind_all('<KeyRelease-Left>', self.stop_paddle)
-        canvas.bind_all('<KeyPress-space>', self.game_start)  # SPACEが押された
+        
 
     def animate(self):
         # 動くものを一括登録
@@ -326,6 +356,7 @@ canvas.pack()
 # ----------------------------------
 # メインルーチン
 box = Box(BOX_TOP_X, BOX_TOP_Y, WALL_EAST, WALL_SOUTH, DURATION)
+box.title()         # タイトル画面 
 box.set()           # ゲームの初期設定
 box.wait_start()    # 開始待ち
 box.animate()       # アニメーション
