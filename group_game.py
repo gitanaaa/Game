@@ -20,7 +20,7 @@ CANVAS_WIDTH = WALL_EAST    # Canvasの幅
 CANVAS_HEIGHT = WALL_SOUTH  # Canvasの高さ
 CANVAS_BACKGROUND = "lightgray"                      # Canvasの背景色
 
-DURATION = 0.01        # 描画間隔
+DURATION = 0.01       # 描画間隔
 
 
 MESSAGE_Y = WALL_SOUTH / 2        # メッセージ表示のY座標
