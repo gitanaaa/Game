@@ -37,11 +37,11 @@ DURATION = 0.01       # 描画間隔
 
 MESSAGE_Y = WALL_SOUTH / 2        # メッセージ表示のY座標
 
-TROLLEY_X0 = WALL_EAST / 2 - 52   # トロッコ初期位置(x)
-TROLLEY_Y0 = WALL_SOUTH - 150    # トロッコ初期位置(y)
-TROLLEY_W = 80                  # トロッコの幅
+TROLLEY_W = 105                  # トロッコの幅
 TROLLEY_H = 120                  # トロッコ高さ
-TROLLEY_VX = (WALL_EAST / 2 - WALL_EAST / 4.5) - 17 # トロッコ移動
+TROLLEY_X0 = WALL_EAST / 2  - TROLLEY_W / 2 # トロッコ初期位置(x)
+TROLLEY_Y0 = WALL_SOUTH - 150    # トロッコ初期位置(y)
+TROLLEY_VX = (WALL_EAST / 2 - WALL_EAST / 4)  # トロッコ移動
 
 DRINK_BONUS = 50                # ボーナス点
 DRINK_WIDTH = 20                # ボーナスアイテムの幅
@@ -306,6 +306,10 @@ class Box:
                            text=message, font=('FixedSys', 16))
         tk.update()
 
+    #スコアのアプデ―ト
+    def update_score(self):
+        canvas.itemconfigure(self.id_score,
+                             text="score:" + str(self.score))
 
     def title(self):
         #タイトル画面のイベントハンドラ
@@ -385,6 +389,13 @@ class Box:
         while self.run:
             for obj in self.movingObjs:
                 obj.move()          # 座標を移動させる
+            for drink in self.drinks:
+                if self.check_drink(drink, self.trolley):
+                    self.score += DRINK_BONUS
+                    self.update_score()
+                    canvas.delete(drink.id)
+                    self.movingObjs.remove(drink)
+                    self.drinks.remove(drink)
 
             for drink in self.drinks:
                 if self.check_wall_drink(drink):   #下にそらした時の処理(ドリンク)
