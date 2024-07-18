@@ -50,6 +50,7 @@ DRINK_COLOR = "red"
 
 ROCK_WIDTH = 20                # 岩アイテムの幅
 ROCK_HEIGHT = 20               # 岩アイテムの高さ
+ROCK_COLOR = "red"
 
 DROP_SPEED = 5                  #アイテムの落ちる速度
 DROP_X = [WALL_EAST / 2 - 40 - DRINK_WIDTH, WALL_EAST / 6 - 40 - DRINK_WIDTH,
@@ -131,6 +132,7 @@ class Box:
     trolley: Trolley
     trolley_v: int
     drinks:list
+    rocks:list
     duration: float
     run: int
 
@@ -141,6 +143,7 @@ class Box:
         self.start_ruletext = 2
         self.trolley_v = TROLLEY_VX
         self.drinks = []
+        self.rocks = []
         self.duration = duration
         self.run = False
 
@@ -230,7 +233,12 @@ class Box:
                                  anchor = ANCHOR)
         return Drink(id, x, y, w, h, DROP_SPEED, c)
 
-    #
+    #岩の生成
+    def create_rock(self, x, y, w=ROCK_WIDTH, h=ROCK_HEIGHT, c=ROCK_COLOR):
+        id = canvas.create_image(random.choice(DROP_X), DROP_Y,
+                                 image = iwa_img,
+                                 anchor = ANCHOR)
+        return Drink(id, x, y, w, h, DROP_SPEED, c)
 
     #アイテムが下にそれたときの処理
     #ドリンク
@@ -238,8 +246,13 @@ class Box:
         if drink.y + drink.h >= self.south:  # 下に逃した
             return True
         return False
-        
 
+    #岩
+    def check_wall_rock(self, rock):
+        if rock.y + rock.h >= self.south:  # 下に逃した
+            return True
+        return False
+        
 
     #タイトル画面キー操作
     def start_text_select(self, event):
@@ -340,14 +353,23 @@ class Box:
                 obj.move()          # 座標を移動させる
 
             for drink in self.drinks:
-                if self.check_wall_drink(drink):   #下にそらした時の処理
+                if self.check_wall_drink(drink):   #下にそらした時の処理(ドリンク)
                     canvas.delete(drink.id)
                     self.drinks.remove(drink)
                     self.movingObjs.remove(drink)
+            for rock in self.rocks:
+                if self.check_wall_rock(rock):   #下にそらした時の処理(ドリンク)
+                    canvas.delete(rock.id)
+                    self.rocks.remove(rock)
+                    self.movingObjs.remove(rock)
             if random.random() < 0.01:  #ドリンクが確率1%で発生
                 drink = self.create_drink(random.choice(DROP_X), DROP_Y)
                 self.drinks.append(drink)
                 self.movingObjs.append(drink)
+            if random.random() < 0.005:  #岩が確率0.5%で発生
+                rock = self.create_rock(random.choice(DROP_X), DROP_Y)
+                self.rocks.append(rock)
+                self.movingObjs.append(rock)
 
             
             for obj in self.movingObjs:
