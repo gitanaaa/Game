@@ -427,6 +427,8 @@ class Box:
     def animate(self):
         #背景をループさせるための変数
         y = 0
+        #終了させるためのキー
+        end = 0
         # 動くものを一括登録
         self.movingObjs = [self.trolley]
         while self.run:
@@ -447,6 +449,7 @@ class Box:
                     self.drinks.remove(drink)
             for rock in self.rocks:
                 if self.check_rock(rock, self.trolley):
+                    end = 1
                     self.score += DRINK_BONUS +1000
                     self.update_score()
                     canvas.delete(rock.id)
@@ -471,6 +474,8 @@ class Box:
                 rock = self.create_rock(random.choice(DROP_X), DROP_Y)
                 self.rocks.append(rock)
                 self.movingObjs.append(rock)
+            if end == 1:
+                break
 
             
             for obj in self.movingObjs:
@@ -479,6 +484,8 @@ class Box:
             canvas.lift(self.id_score)
             time.sleep(self.duration)
             tk.update()
+        canvas.delete("all")
+        tk.update()
 
 
 #------------------------------------------------------------------------------
