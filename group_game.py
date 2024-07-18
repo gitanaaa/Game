@@ -78,6 +78,9 @@ class MovingObject:
         self.x += self.vx
         self.y += self.vy
 
+    def front(self):
+        canvas.lift(self.id)            #オブジェクトを最前面に移動
+
 class Drink(MovingObject):
     def __init__(self, id, x, y, w, h, vy, c):
         MovingObject.__init__(self, id, x, y, w, h, 0, vy)
@@ -359,8 +362,6 @@ class Box:
         
 
     def set(self):   # 初期設定を一括して行う
-        
-        canvas.create_image(0, 0, image = back_img, anchor = "nw")
 
         # スコアの表示
         self.id_score = canvas.create_text(
@@ -377,6 +378,8 @@ class Box:
                                          TROLLEY_W, TROLLEY_H,
                                          "red")
 
+        
+
         # イベント処理の登録
         canvas.bind_all('<KeyPress-Right>', self.right_trolley)
         canvas.bind_all('<KeyPress-Left>', self.left_trolley)
@@ -385,9 +388,17 @@ class Box:
         
 
     def animate(self):
+        #背景をループさせるための変数
+        y = 0
         # 動くものを一括登録
         self.movingObjs = [self.trolley]
         while self.run:
+            #背景をループさせる
+            y = (y + 5) % 600
+            canvas.delete("IMAGE")
+            canvas.create_image(0,y-599,image=back_img,anchor = "nw",tag="IMAGE")
+            canvas.create_image(0,y+1,image=back_img,anchor = "nw",tag="IMAGE")
+            
             for obj in self.movingObjs:
                 obj.move()          # 座標を移動させる
             for drink in self.drinks:
@@ -427,8 +438,10 @@ class Box:
             
             for obj in self.movingObjs:
                 obj.redraw()    # 移動後の座標で再描画(画面反映)
+                obj.front()     #背景に埋もれないために最前面に移動
             time.sleep(self.duration)
             tk.update()
+
 
 #------------------------------------------------------------------------------
 canvas = Canvas(tk, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg=CANVAS_BACKGROUND)
