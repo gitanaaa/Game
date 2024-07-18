@@ -54,7 +54,7 @@ ROCK_HEIGHT = 20               # 岩アイテムの高さ
 DROP_SPEED = 5                  #アイテムの落ちる速度
 DROP_X = [WALL_EAST / 2 - 40 - DRINK_WIDTH, WALL_EAST / 6 - 40 - DRINK_WIDTH,
           WALL_EAST * (5/6) - 40 - DRINK_WIDTH]  #アイテムの出現する場所X軸
-DROP_Y = 0                      #アイテムの出現する場所X軸
+DROP_Y = 0 - DRINK_WIDTH      #アイテムの出現する場所X軸
 ANCHOR = "nw"                  #アイテムの表示座標の基準
 
 
