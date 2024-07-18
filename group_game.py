@@ -37,11 +37,11 @@ DURATION = 0.01       # 描画間隔
 
 MESSAGE_Y = WALL_SOUTH / 2        # メッセージ表示のY座標
 
-TROLLEY_X0 = WALL_EAST / 2 - 40   # トロッコ初期位置(x)
+TROLLEY_X0 = WALL_EAST / 2 - 52   # トロッコ初期位置(x)
 TROLLEY_Y0 = WALL_SOUTH - 150    # トロッコ初期位置(y)
 TROLLEY_W = 80                  # トロッコの幅
 TROLLEY_H = 120                  # トロッコ高さ
-TROLLEY_VX = (WALL_EAST / 2 - WALL_EAST / 6) # カーソル移動
+TROLLEY_VX = (WALL_EAST / 2 - WALL_EAST / 4.5) - 17 # トロッコ移動
 
 DRINK_BONUS = 50                # ボーナス点
 DRINK_WIDTH = 20                # ボーナスアイテムの幅
@@ -53,8 +53,8 @@ ROCK_HEIGHT = 20               # 岩アイテムの高さ
 ROCK_COLOR = "red"
 
 DROP_SPEED = 5                  #アイテムの落ちる速度
-DROP_X = [WALL_EAST / 2 - 40 - DRINK_WIDTH, WALL_EAST / 6 - 40 - DRINK_WIDTH,
-          WALL_EAST * (5/6) - 40 - DRINK_WIDTH]  #アイテムの出現する場所X軸
+DROP_X = [TROLLEY_X0 ,TROLLEY_X0 - TROLLEY_VX,
+          TROLLEY_X0 + TROLLEY_VX]  #アイテムの出現する場所X軸
 DROP_Y = 0 - DRINK_WIDTH      #アイテムの出現する場所X軸
 ANCHOR = "nw"                  #アイテムの表示座標の基準
 
@@ -97,10 +97,10 @@ class Trolley(MovingObject):
 
     def move(self):                     # トロッコだけ独自の移動
         self.x += self.vx
-        if self.x < WALL_EAST / 6 - 40:
-            self.x = WALL_EAST / 6 - 40
-        if self.x > WALL_EAST * (5/6) - 40:
-            self.x = WALL_EAST * (5/6) - 40
+        if self.x < TROLLEY_X0 - TROLLEY_VX:
+            self.x = TROLLEY_X0 - TROLLEY_VX
+        if self.x > TROLLEY_X0 + TROLLEY_VX:
+            self.x = TROLLEY_X0 + TROLLEY_VX
         self.vx = 0  #矢印キーを押した一瞬だけ反応
     
     def set_v(self, v):
@@ -114,11 +114,13 @@ class Trolley(MovingObject):
 TROLLEY = "torikko-oji2.png"
 IWA = "iwa2.png"
 DRINK = "enadori2.png"
+BACK = "fild_image3-1(png).png"
 
 #インスタンスと紐づけ
 trolley_img = PhotoImage(file=TROLLEY)
 iwa_img = PhotoImage(file=IWA)
 drink_img = PhotoImage(file=DRINK)
+back_img = PhotoImage(file=BACK)
 # ----------------------------------
 # Box(ゲーム領域)の定義
 @dataclass
@@ -331,8 +333,9 @@ class Box:
         
 
     def set(self):   # 初期設定を一括して行う
-
-
+        
+        canvas.create_image(0, 0, image = back_img, anchor = "nw")
+        
         # トロッコの生成
         self.trolley = self.create_paddle(TROLLEY_X0, TROLLEY_Y0,
                                          TROLLEY_W, TROLLEY_H,
