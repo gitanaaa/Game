@@ -226,9 +226,11 @@ class Box:
     # ドリンクの生成
     def create_drink(self, x, y, w=DRINK_WIDTH, h=DRINK_HEIGHT, c=DRINK_COLOR):
         id = canvas.create_image(random.choice(DROP_X), DROP_Y,
-                                 image = iwa_img,
+                                 image = drink_img,
                                  anchor = ANCHOR)
         return Drink(id, x, y, w, h, DROP_SPEED, c)
+
+    #
 
     #アイテムが下にそれたときの処理
     #ドリンク
