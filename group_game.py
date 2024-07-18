@@ -38,7 +38,7 @@ DURATION = 0.01       # 描画間隔
 MESSAGE_Y = WALL_SOUTH / 2        # メッセージ表示のY座標
 
 TROLLEY_W = 105                  # トロッコの幅
-TROLLEY_H = 120                  # トロッコ高さ
+TROLLEY_H = 150                  # トロッコ高さ
 TROLLEY_X0 = WALL_EAST / 2  - TROLLEY_W / 2 # トロッコ初期位置(x)
 TROLLEY_Y0 = WALL_SOUTH - 150    # トロッコ初期位置(y)
 TROLLEY_VX = (WALL_EAST / 2 - WALL_EAST / 4)  # トロッコ移動
@@ -269,7 +269,7 @@ class Box:
 
     #岩がトロッコに当たったときの処理
     def check_rock(self, rock, trolley):
-        if (trolley.x == rockk.x \
+        if (trolley.x == rock.x \
             and rock.y + rock.h > trolley.y \
             and rock.y <= trolley.y + trolley.h):
             return True
@@ -329,6 +329,7 @@ class Box:
         id_text2 = canvas.create_text(BOX_CENTER, MESSAGE_Y-150,
                                      text="ADVENTURE",
                                      font=('Ravie', 40))
+
         
         #タイトル画面（ルール画面もあり）
         while not self.run:    # スタートボタンが押されるまで待つ
@@ -396,6 +397,13 @@ class Box:
                     canvas.delete(drink.id)
                     self.movingObjs.remove(drink)
                     self.drinks.remove(drink)
+            for rock in self.rocks:
+                if self.check_rock(rock, self.trolley):
+                    self.score += DRINK_BONUS +1000
+                    self.update_score()
+                    canvas.delete(rock.id)
+                    self.movingObjs.remove(rock)
+                    self.rocks.remove(rock)
 
             for drink in self.drinks:
                 if self.check_wall_drink(drink):   #下にそらした時の処理(ドリンク)
