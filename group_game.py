@@ -191,31 +191,57 @@ class Box:
                                      text="～ ルール ～",
                                      font=('Malgun Gothic',30))
         self.rule_text1 = canvas.create_text(TITLE_BACK_X + 25, MESSAGE_Y,
-                                     text="①：方向キーの右と左を使って移動しよう",
+                                     text="・方向キーの右と左を使ってドリンクをゲットしよう！",
                                      anchor = "nw",
-                                     font=('Malgun Gothic',16))
-        self.rule_text2 = canvas.create_text(TITLE_BACK_X + 25, MESSAGE_Y + 50,
-                                     text="②：岩をよけて行動しよう",
-                                     anchor = "nw",
-                                     font=('Malgun Gothic',16))
-        self.rule_text3 = canvas.create_text(TITLE_BACK_X + 25, MESSAGE_Y + 100,
-                                     text="③：ボーナスアイテムをとって得点を稼ごう",
-                                     anchor = "nw",
-                                     font=('Malgun Gothic',16))
-        self.rule_text4 = canvas.create_text(TITLE_BACK_X + 400, MESSAGE_Y + 170,
-                                     text="～以上～",
-                                     font=('Malgun Gothic',18))
-        self.rule_text5 = canvas.create_text(TITLE_BACK_X + 440, MESSAGE_Y + 200,
-                                     text="ふぁいと～",
-                                     font=('Malgun Gothic',10))
-        self.rule_text6 = canvas.create_text(TITLE_BACK_X + 400, 550,
-                                     text="'Press Enter' To Title",
                                      font=('Malgun Gothic',14))
+        self.rule_img_drink = canvas.create_image(TITLE_BACK_X + 25, MESSAGE_Y + 30,
+                                     image = drink_img,
+                                     anchor = ANCHOR)
+        self.rule_text2 = canvas.create_text(TITLE_BACK_X + 25 +100, MESSAGE_Y + 50,
+                                     text="：+50ポイント獲得",
+                                     anchor = "nw",
+                                     font=('Malgun Gothic',14))
+        self.rule_img_rock = canvas.create_image(TITLE_BACK_X + 25, MESSAGE_Y + 100,
+                                     image = iwa_img,
+                                     anchor = ANCHOR)
+        self.rule_text3 = canvas.create_text(TITLE_BACK_X + 25 + 100, MESSAGE_Y + 130,
+                                     text="：当たったら即ご臨終",
+                                     anchor = "nw",
+                                     font=('Malgun Gothic',14))
+        
+        self.rule_img_trolley = canvas.create_image(TITLE_BACK_X + 25, MESSAGE_Y + 190,
+                                     image = trolley_img,
+                                     anchor = ANCHOR)
+        self.rule_text4 = canvas.create_text(TITLE_BACK_X + 25 + 100, MESSAGE_Y + 185,
+                                     text="：出生地不詳、1912年生まれの32歳",
+                                     anchor = "nw",
+                                     font=('Malgun Gothic',10))
+        self.rule_text5 = canvas.create_text(TITLE_BACK_X + 25 + 100, MESSAGE_Y + 205,
+                                     text="　やや薄くなり始めた煤だらけの長髪を後ろで雑にまとめ、",
+                                     anchor = "nw",
+                                     font=('Malgun Gothic',10))
+        self.rule_text6 = canvas.create_text(TITLE_BACK_X + 25 + 100, MESSAGE_Y + 225,
+                                     text="　顔は青白く、頬はやせこけ、落ちくぼんだ眼窩からは",
+                                     anchor = "nw",
+                                     font=('Malgun Gothic',10))
+        self.rule_text7 = canvas.create_text(TITLE_BACK_X + 25 + 100, MESSAGE_Y + 245,
+                                     text="　生気は感じられない。",
+                                     anchor = "nw",
+                                     font=('Malgun Gothic',10))
+        self.rule_text8 = canvas.create_text(TITLE_BACK_X + 25 + 100, MESSAGE_Y + 265,
+                                     text="　現在は鉱山にて強制労働しており、その罪状は誰も知らない……",
+                                     anchor = "nw",
+                                     font=('Malgun Gothic',10))
+        self.rule_text9 = canvas.create_text(TITLE_BACK_X + 400, 590,
+                                     text="'Press Enter' To Title",
+                                     font=('Malgun Gothic',9))
         tk.update()
 
     def rule_text_delete(self):
-        canvas.delete(self.rule_text, self.rule_text1, self.rule_text2, self.rule_text3, self.rule_text4,
-                      self.rule_text5, self.rule_text6)
+        canvas.delete(self.rule_text, self.rule_text1, self.rule_text2, self.rule_text3,
+                      self.rule_text4, self.rule_text5, self.rule_text6,
+                      self.rule_text7, self.rule_text8, self.rule_text9,
+                      self.rule_img_drink, self.rule_img_rock, self.rule_img_trolley)
         tk.update()
         del self.rule_text
         del self.rule_text1
@@ -224,6 +250,12 @@ class Box:
         del self.rule_text4
         del self.rule_text5
         del self.rule_text6
+        del self.rule_text7
+        del self.rule_text8
+        del self.rule_text9
+        del self.rule_img_drink
+        del self.rule_img_rock
+        del self.rule_img_trolley
         
         
     # トロッコの生成
@@ -313,6 +345,7 @@ class Box:
     def update_score(self):
         canvas.itemconfigure(self.id_score,
                              text="score:" + str(self.score))
+        
 
     def title(self):
         #タイトル画面のイベントハンドラ
@@ -320,7 +353,10 @@ class Box:
         canvas.bind_all('<KeyPress-Up>', self.start_text_select)
         canvas.bind_all('<Key-space>', self.game_start)  # SPACEが押された
 
-        #背後の四角形
+        #タイトルの背景その1
+        canvas.create_image(0,0,image=back_img,anchor = "nw")
+
+        #タイトルの背景その２
         canvas.create_rectangle(TITLE_BACK_X, TITLE_BACK_Y, TITLE_BACK_WIDTH, TITLE_BACK_HIGHT,
                                 fill = "wheat",
                                 width = TITLE_BACK_LINE)
@@ -439,6 +475,7 @@ class Box:
             for obj in self.movingObjs:
                 obj.redraw()    # 移動後の座標で再描画(画面反映)
                 obj.front()     #背景に埋もれないために最前面に移動
+            canvas.lift(self.id_score)
             time.sleep(self.duration)
             tk.update()
 
