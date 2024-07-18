@@ -130,7 +130,7 @@ class Box:
     start_ruletext: int
     trolley: Trolley
     trolley_v: int
-    drink:list
+    drinks:list
     duration: float
     run: int
 
@@ -140,7 +140,7 @@ class Box:
         self.title_select = 1
         self.start_ruletext = 2
         self.trolley_v = TROLLEY_VX
-        self.drink = []
+        self.drinks = []
         self.duration = duration
         self.run = False
 
@@ -229,6 +229,14 @@ class Box:
                                  image = iwa_img,
                                  anchor = ANCHOR)
         return Drink(id, x, y, w, h, DROP_SPEED, c)
+
+    #アイテムが下にそれたときの処理
+    #ドリンク
+    def check_wall_drink(self, drink):
+        if drink.y + drink.h >= self.south:  # 下に逃した
+            return True
+        return False
+        
 
 
     #タイトル画面キー操作
@@ -328,6 +336,16 @@ class Box:
         while self.run:
             for obj in self.movingObjs:
                 obj.move()          # 座標を移動させる
+
+            for drink in self.drinks:
+                if self.check_wall_drink(drink):   #下にそらした時の処理
+                    canvas.delete(drink.id)
+                    self.drinks.remove(drink)
+                    self.movingObjs.remove(drink)
+            if random.random() < 0.01:  #ドリンクが確率1%で発生
+                drink = self.create_drink(random.choice(DROP_X), DROP_Y)
+                self.drinks.append(drink)
+                self.movingObjs.append(drink)
 
             
             for obj in self.movingObjs:
