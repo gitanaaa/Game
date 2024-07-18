@@ -4,6 +4,7 @@
 # プログラム名: ex08-blocks.py
 
 from tkinter import Tk, Canvas, SW
+import tkinter as tk
 from dataclasses import dataclass, field
 import random
 import time
@@ -11,8 +12,8 @@ from tkinter import PhotoImage
 
 # =================================================
 # -------------------
-tk=Tk()
-tk.title("Game")
+root=Tk()
+root.title("Game")
 
 #------------------------------
 # 初期設定値(定数)
@@ -236,7 +237,7 @@ class Box:
         self.rule_text9 = canvas.create_text(TITLE_BACK_X + 400, 590,
                                      text="'Press Enter' To Title",
                                      font=('Malgun Gothic',9))
-        tk.update()
+        root.update()
 
     def rule_text_delete(self):
         canvas.delete(self.rule_text, self.rule_text1, self.rule_text2, self.rule_text3,
@@ -376,16 +377,16 @@ class Box:
             if self.start_ruletext % 2 == 0:           #タイトル画面
                 self.start_text_color(self.title_select)
                 self.rule_text_color(self.title_select)
-                tk.update()
+                root.update()
                 time.sleep(self.duration)
-                tk.update()
+                root.update()
                 canvas.delete(start)
                 canvas.delete(rule)
 
             else:                                       #ルール説明画面
                 self.rule_text()
                 while self.start_ruletext % 2 == 1:
-                    tk.update()
+                    root.update()
                     time.sleep(self.duration)
                 self.rule_text_delete()                
                     
@@ -393,7 +394,7 @@ class Box:
             #time.sleep(self.duration)
             #canvas.delete(id_text)
         canvas.delete("all")
-        tk.update()
+        root.update()
 
         
         
@@ -450,11 +451,6 @@ class Box:
             for rock in self.rocks:
                 if self.check_rock(rock, self.trolley):
                     end = 1
-                    self.score += DRINK_BONUS +1000
-                    self.update_score()
-                    canvas.delete(rock.id)
-                    self.movingObjs.remove(rock)
-                    self.rocks.remove(rock)
 
             for drink in self.drinks:
                 if self.check_wall_drink(drink):   #下にそらした時の処理(ドリンク)
@@ -470,7 +466,7 @@ class Box:
                 drink = self.create_drink(random.choice(DROP_X), DROP_Y)
                 self.drinks.append(drink)
                 self.movingObjs.append(drink)
-            if random.random() < 0.005:  #岩が確率0.5%で発生
+            if random.random() < 0.007:  #岩が確率0.7%で発生
                 rock = self.create_rock(random.choice(DROP_X), DROP_Y)
                 self.rocks.append(rock)
                 self.movingObjs.append(rock)
@@ -483,13 +479,20 @@ class Box:
                 obj.front()     #背景に埋もれないために最前面に移動
             canvas.lift(self.id_score)
             time.sleep(self.duration)
-            tk.update()
+            root.update()
         canvas.delete("all")
-        tk.update()
+        root.update()
+
+    def score_screen_set(self):
+        global score
+        score = self.score
+        #背景
+        canvas.create_image(0,0,image=back_img,anchor = "nw")
+        root.update()
 
 
 #------------------------------------------------------------------------------
-canvas = Canvas(tk, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg=CANVAS_BACKGROUND)
+canvas = Canvas(root, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg=CANVAS_BACKGROUND)
 canvas.pack()
 # ----------------------------------
 # メインルーチン
@@ -497,3 +500,27 @@ box = Box(BOX_TOP_X, BOX_TOP_Y, WALL_EAST, WALL_SOUTH, DURATION)
 box.title()         # タイトル画面 
 box.set()           # ゲームの初期設定
 box.animate()       # アニメーション
+score = 0
+box.score_screen_set()
+
+
+
+# スコアに応じたコメントを設定
+if score >= 600:#ここと
+    comment = "我が生涯に一片の悔いなし!!"
+elif score >= 300:#ここのスコアの調整を頼みます！！
+    comment = "ﾌﾞｩｩｩｩﾝ"
+else:
+    comment = "止まるんじゃねぇぞ"
+
+# スコアとコメントを表示するラベル
+label = tk.Label(root,text=f"Your Score: {score}\n{comment}", font=("Arial", 24))
+label.pack(side =tk.TOP)
+
+exit_button = tk.Button(root,text="Exit", command=quit)
+exit_button.pack()
+
+
+
+
+
