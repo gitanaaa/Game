@@ -7,8 +7,14 @@ from tkinter import Tk, Canvas, SW
 from dataclasses import dataclass, field
 import random
 import time
+from tkinter import PhotoImage
 
 # =================================================
+# -------------------
+tk=Tk()
+tk.title("Game")
+
+#------------------------------
 # 初期設定値(定数)
 BOX_TOP_X = 0 # ゲーム領域の左上X座標
 BOX_TOP_Y = 0 # ゲーム領域の左上Y座標
@@ -37,6 +43,20 @@ TROLLEY_W = 80                  # トロッコの幅
 TROLLEY_H = 120                  # トロッコ高さ
 TROLLEY_VX = (WALL_EAST / 2 - WALL_EAST / 6) # カーソル移動
 
+DRINK_BONUS = 50                # ボーナス点
+DRINK_WIDTH = 20                # ボーナスアイテムの幅
+DRINK_HEIGHT = 20               # ボーナスアイテムの高さ
+DRINK_COLOR = "red"
+
+ROCK_WIDTH = 20                # 岩アイテムの幅
+ROCK_HEIGHT = 20               # 岩アイテムの高さ
+
+DROP_SPEED = 5                  #アイテムの落ちる速度
+DROP_X = [WALL_EAST / 2 - 40 - DRINK_WIDTH, WALL_EAST / 6 - 40 - DRINK_WIDTH,
+          WALL_EAST * (5/6) - 40 - DRINK_WIDTH]  #アイテムの出現する場所X軸
+DROP_Y = 0                      #アイテムの出現する場所X軸
+ANCHOR = "nw"                  #アイテムの表示座標の基準
+
 
 # ----------------------------------
 # 共通の親クラスとして、MovingObjectを定義
@@ -51,12 +71,20 @@ class MovingObject:
     vy: int
 
     def redraw(self):                   # 再描画(移動結果の画面反映)
-        canvas.coords(self.id, self.x, self.y,
-                      self.x + self.w, self.y + self.h)
+        canvas.coords(self.id, self.x, self.y)
 
     def move(self):                     # 移動させる
         self.x += self.vx
         self.y += self.vy
+
+class Drink(MovingObject):
+    def __init__(self, id, x, y, w, h, vy, c):
+        MovingObject.__init__(self, id, x, y, w, h, 0, vy)
+        
+
+class Rock(MovingObject):
+    def __init__(self, id, x, y, w, h, vy, c):
+        MovingObject.__init__(self, id, x, y, w, h, 0, vy)
 
 
 
@@ -80,6 +108,16 @@ class Trolley(MovingObject):
     def stop(self):     # 停止も、Paddle独自のメソッド
         self.vx = 0
 
+#----------------------------------
+#画像ファイルのパス設定
+TROLLEY = "torikko-oji2.png"
+IWA = "iwa2.png"
+DRINK = "enadori2.png"
+
+#インスタンスと紐づけ
+trolley_img = PhotoImage(file=TROLLEY)
+iwa_img = PhotoImage(file=IWA)
+drink_img = PhotoImage(file=DRINK)
 # ----------------------------------
 # Box(ゲーム領域)の定義
 @dataclass
@@ -92,6 +130,7 @@ class Box:
     start_ruletext: int
     trolley: Trolley
     trolley_v: int
+    drink:list
     duration: float
     run: int
 
@@ -101,6 +140,7 @@ class Box:
         self.title_select = 1
         self.start_ruletext = 2
         self.trolley_v = TROLLEY_VX
+        self.drink = []
         self.duration = duration
         self.run = False
 
@@ -178,8 +218,17 @@ class Box:
         
     # トロッコの生成
     def create_paddle(self, x, y, w, h, c):
-        id = canvas.create_rectangle(x, y, x + w, y + h, fill=c,)
+        id = canvas.create_image(TROLLEY_X0, TROLLEY_Y0,
+                                 image = trolley_img,
+                                 anchor = ANCHOR)
         return Trolley(id, x, y, w, h, c)
+
+    # ドリンクの生成
+    def create_drink(self, x, y, w=DRINK_WIDTH, h=DRINK_HEIGHT, c=DRINK_COLOR):
+        id = canvas.create_image(random.choice(DROP_X), DROP_Y,
+                                 image = iwa_img,
+                                 anchor = ANCHOR)
+        return Drink(id, x, y, w, h, DROP_SPEED, c)
 
 
     #タイトル画面キー操作
@@ -279,19 +328,16 @@ class Box:
         while self.run:
             for obj in self.movingObjs:
                 obj.move()          # 座標を移動させる
+
             
             for obj in self.movingObjs:
                 obj.redraw()    # 移動後の座標で再描画(画面反映)
             time.sleep(self.duration)
             tk.update()
 
-# -------------------
-tk=Tk()
-tk.title("Game")
-
+#------------------------------------------------------------------------------
 canvas = Canvas(tk, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg=CANVAS_BACKGROUND)
 canvas.pack()
-
 # ----------------------------------
 # メインルーチン
 box = Box(BOX_TOP_X, BOX_TOP_Y, WALL_EAST, WALL_SOUTH, DURATION)
