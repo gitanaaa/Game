@@ -135,6 +135,7 @@ class Box:
     trolley_v: int
     drinks:list
     rocks:list
+    socre:int
     duration: float
     run: int
 
@@ -146,6 +147,7 @@ class Box:
         self.trolley_v = TROLLEY_VX
         self.drinks = []
         self.rocks = []
+        self.score = 0
         self.duration = duration
         self.run = False
 
@@ -354,6 +356,16 @@ class Box:
     def set(self):   # 初期設定を一括して行う
         
         canvas.create_image(0, 0, image = back_img, anchor = "nw")
+
+        # スコアの表示
+        self.id_score = canvas.create_text(
+            BOX_TOP_X + 40,
+            BOX_TOP_Y + 40,
+            text=("score: " + str(self.score)),
+            font=("Malgun Gothic", 20), justify="left",
+            fill="red",
+            anchor=SW
+            )
         
         # トロッコの生成
         self.trolley = self.create_paddle(TROLLEY_X0, TROLLEY_Y0,
