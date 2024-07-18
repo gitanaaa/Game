@@ -254,6 +254,25 @@ class Box:
         if rock.y + rock.h >= self.south:  # 下に逃した
             return True
         return False
+
+
+    #ドリンクがトロッコに当たったときの処理
+    def check_drink(self, drink, trolley):
+        if (trolley.x == drink.x \
+            and drink.y + drink.h > trolley.y \
+            and drink.y <= trolley.y + trolley.h):
+            return True
+        else:
+            return False
+
+    #岩がトロッコに当たったときの処理
+    def check_rock(self, rock, trolley):
+        if (trolley.x == rockk.x \
+            and rock.y + rock.h > trolley.y \
+            and rock.y <= trolley.y + trolley.h):
+            return True
+        else:
+            return False
         
 
     #タイトル画面キー操作
